@@ -31,7 +31,7 @@ func TestUUIDValue(t *testing.T) {
 
 	// Mutations in source value should produce mutations in internal DB
 	// values
-	uuid[0] += 1
+	uuid[0]++
 	assert.Equal(t, expected, val)
 }
 
@@ -48,7 +48,7 @@ func TestUUIDScan(t *testing.T) {
 
 	// Mutations in internal DB value should not produce mutations in
 	// scanned value
-	src[0] += 1
+	src[0]++
 	assert.Equal(t, expected, uuid)
 }
 

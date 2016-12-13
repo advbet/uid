@@ -49,7 +49,7 @@ func NewInts(a uint64, b uint64) (uuid UUID) {
 // not match integer based UUIDs.
 func (uuid UUID) ParseIntBased() (a uint64, b uint64, err error) {
 	if uuid.getVariant() != variantInts {
-		return 0, 0, errors.New("UUID value is not integer based")
+		return 0, 0, errors.New("uuid: value is not integers based UUID")
 	}
 	a = binary.BigEndian.Uint64(uuid[:8])
 	b = binary.BigEndian.Uint64(uuid[8:])
@@ -142,20 +142,18 @@ func (uuid *UUID) Scan(src interface{}) error {
 	switch src := src.(type) {
 	case []byte:
 		if len(src) != len(uuid) {
-			return errors.New("Incompatible underlying DB type length, UUID must be exactly 16 bytes")
+			return errors.New("uid: incompatible underlying DB type length, UUID field must be exactly 16 bytes")
 		}
-		for i := range src {
-			uuid[i] = src[i]
-		}
+		copy(uuid[:], src)
 	default:
-		return fmt.Errorf("Cannot convert %T to UUID, only []byte is supported", src)
+		return fmt.Errorf("uid: cannot convert %T to UUID", src)
 	}
 	return nil
 }
 
 // Value implements Valuer interface from database/sql/driver package.
 func (uuid UUID) Value() (driver.Value, error) {
-	return []byte(uuid[:]), nil
+	return uuid[:], nil
 }
 
 // MarshalText implements TextMarshaler interface from encoding package.
@@ -168,7 +166,7 @@ func (uuid *UUID) UnmarshalText(data []byte) error {
 	// Remove - symbols
 	data = bytes.Replace(data, []byte{'-'}, nil, -1)
 	if len(data) != 2*len(uuid) {
-		return errors.New("UUID value must have 32 hexadecimal symbols")
+		return errors.New("uid: invalid UUID value length")
 	}
 	_, err := hex.Decode(uuid[:], data)
 	return err
