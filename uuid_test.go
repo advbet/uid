@@ -233,10 +233,10 @@ func TestUUIDUnmarshalJSON(t *testing.T) {
 func TestNewV5(t *testing.T) {
 	hostname := "example.net"
 
-	ns, err := Parse("6ba7b810-9dad-11d1-80b4-00c04fd430c8") // https://tools.ietf.org/html/rfc4122#appendix-C
+	ns, err := FromString("6ba7b810-9dad-11d1-80b4-00c04fd430c8") // https://tools.ietf.org/html/rfc4122#appendix-C
 	require.NoError(t, err)
 
-	expected, err := Parse("90d38b76-e7dd-5733-8575-0d06a98e8b70")
+	expected, err := FromString("90d38b76-e7dd-5733-8575-0d06a98e8b70")
 	require.NoError(t, err)
 
 	actual := NewV5(ns, hostname)

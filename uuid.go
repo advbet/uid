@@ -100,9 +100,9 @@ func NewV5(ns UUID, name string) (uuid UUID) {
 	return uuid
 }
 
-// Parse creates new UUID from string. It is a convenience function to perform
+// FromString creates new UUID from string. It is a convenience function to perform
 // UUID allocation and call to UnmarshalText in one line.
-func Parse(str string) (uuid UUID, err error) {
+func FromString(str string) (uuid UUID, err error) {
 	err = uuid.UnmarshalText([]byte(str))
 	return
 }
