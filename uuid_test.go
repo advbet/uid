@@ -95,6 +95,24 @@ func TestUUIDParseIntBased(t *testing.T) {
 	assert.Error(t, err)
 }
 
+func TestNewTimeSequence(t *testing.T) {
+	now := time.Now()
+	uuid1 := NewTime(now)
+	uuid2 := NewTime(now.Add(time.Second))
+
+	// Later UUID should always be bigger than previous UUIDs
+	// Assert uuid1 < uuid2
+	assert.True(t, bytes.Compare(uuid1[0:], uuid2[0:]) == -1)
+}
+
+func TestNewTimeVariant(t *testing.T) {
+	uuid := NewTime(time.Now())
+	variant := uuid[8] >> 6
+
+	// Time and rand based UUIDs should have variant value 01xx xxxx
+	assert.Equal(t, byte(0x03), variant)
+}
+
 func TestNewTimeRandSequence(t *testing.T) {
 	uuid1 := NewTimeRand()
 	time.Sleep(time.Millisecond)
