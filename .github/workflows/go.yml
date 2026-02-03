@@ -18,7 +18,7 @@ jobs:
       uses: golangci/golangci-lint-action@v6
       with:
         version: v1.64.8
-        args: --disable-all --enable=govet --enable=unused --enable=structcheck --enable=deadcode
+        args: --disable-all --enable=govet --enable=unused
 
     - name: Build
       run: go build -v ./...
