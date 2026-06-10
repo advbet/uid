@@ -35,7 +35,7 @@ func TestUUIDValue(t *testing.T) {
 	assert.Equal(t, expected, val)
 }
 
-func TestUUIDScan(t *testing.T) {
+func TestUUIDScanBytes(t *testing.T) {
 	var err error
 	var uuid UUID
 
@@ -52,7 +52,7 @@ func TestUUIDScan(t *testing.T) {
 	assert.Equal(t, expected, uuid)
 }
 
-func TestUUIDScanErrors(t *testing.T) {
+func TestUUIDScanBytesErrors(t *testing.T) {
 	var err error
 	var uuid UUID
 
@@ -62,6 +62,33 @@ func TestUUIDScanErrors(t *testing.T) {
 
 	// Invalid type
 	err = uuid.Scan(15)
+	assert.Error(t, err)
+}
+
+func TestUUIDScanString(t *testing.T) {
+	var err error
+	var uuid UUID
+
+	expected, err := FromString("16c8034b-5a29-73bc-49e4-80ab6cf505e4")
+	assert.NoError(t, err)
+
+	src := "16c8034b-5a29-73bc-49e4-80ab6cf505e4"
+
+	err = uuid.Scan(src)
+	assert.NoError(t, err)
+	assert.Equal(t, expected, uuid)
+}
+
+func TestUUIDScanStringErrors(t *testing.T) {
+	var err error
+	var uuid UUID
+
+	// Invalid uuid format
+	err = uuid.Scan("16c8034b-5a29-73bc-49e4-80ab6cf505kk")
+	assert.Error(t, err)
+
+	// Invalid uuid string
+	err = uuid.Scan("")
 	assert.Error(t, err)
 }
 

@@ -1,7 +1,7 @@
 uid
 ===
 
-[![GoDoc](https://godoc.org/bitbucket.org/advbet/uid?status.svg)](https://godoc.org/bitbucket.org/advbet/uid)
+[![GoDoc](https://godoc.org/github.com/advbet/uid?status.svg)](https://godoc.org/github.com/advbet/uid)
 
 This is a Go library for UUID generation. In addition to RFC4122 V5 UUID type,
 this library can generate two custom UUID types:
