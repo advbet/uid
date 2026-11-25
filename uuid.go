@@ -36,12 +36,22 @@ var Zero = UUID{}
 //	|aa|aa|aa|aa|aa|aa|aa|aa|00bb bbbb|bb|bb|bb|bb|bb|bb|bb|
 //
 // Note: Two most significant bits from `b` will be overwriten by variant
-// type.
+// type, so values of `b` that differ only in those bits produce the same UUID.
+// Use NewIntsChecked when `b` must survive a round trip through ParseIntBased.
 func NewInts(a uint64, b uint64) (uuid UUID) {
 	binary.BigEndian.PutUint64(uuid[:8], a)
 	binary.BigEndian.PutUint64(uuid[8:], b)
 	uuid.setVariant(variantInts)
 	return
+}
+
+// NewIntsChecked works like NewInts, but returns an error instead of silently
+// dropping two most significant bits of `b`.
+func NewIntsChecked(a uint64, b uint64) (UUID, error) {
+	if b>>62 != 0 {
+		return Zero, errors.New("uid: b does not fit in 62 bits")
+	}
+	return NewInts(a, b), nil
 }
 
 // ParseIntBased extracts two 64bit integer values from integer based UUID. This
