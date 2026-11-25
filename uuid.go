@@ -1,7 +1,6 @@
 package uid
 
 import (
-	"bytes"
 	"crypto/rand"
 	"crypto/sha1"
 	"database/sql/driver"
@@ -168,12 +167,35 @@ func (uuid UUID) MarshalText() ([]byte, error) {
 }
 
 // UnmarshalText implements TextUnmarshaler inferface from encoding package.
+//
+// Only two forms are accepted: canonical 36 symbol form with hyphens
+// (xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx) and 32 symbol form without hyphens.
+// On error receiver is left unchanged.
 func (uuid *UUID) UnmarshalText(data []byte) error {
-	// Remove - symbols
-	data = bytes.ReplaceAll(data, []byte{'-'}, nil)
-	if len(data) != 2*len(uuid) {
+	var digits [2 * len(uuid)]byte
+
+	switch len(data) {
+	case 36:
+		if data[8] != '-' || data[13] != '-' || data[18] != '-' || data[23] != '-' {
+			return errors.New("uid: invalid UUID format")
+		}
+		copy(digits[0:], data[0:8])
+		copy(digits[8:], data[9:13])
+		copy(digits[12:], data[14:18])
+		copy(digits[16:], data[19:23])
+		copy(digits[20:], data[24:36])
+	case 32:
+		copy(digits[:], data)
+	default:
 		return errors.New("uid: invalid UUID value length")
 	}
-	_, err := hex.Decode(uuid[:], data)
-	return err
+
+	// Decode to a temporary value, so that receiver is not partially
+	// overwritten when data contains invalid hex symbols
+	var tmp UUID
+	if _, err := hex.Decode(tmp[:], digits[:]); err != nil {
+		return err
+	}
+	*uuid = tmp
+	return nil
 }
