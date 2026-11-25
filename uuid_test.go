@@ -188,28 +188,59 @@ func TestUUIDMarshalText(t *testing.T) {
 }
 
 func TestUUIDUnmarshalText(t *testing.T) {
-	val := `00010203-0405-0607-0809-0a0b0c0d0e0f`
 	expected := UUID{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15}
-	var actual UUID
 
-	err := actual.UnmarshalText([]byte(val))
-	assert.NoError(t, err)
-	assert.Equal(t, expected, actual)
+	tests := map[string]struct {
+		val string
+	}{
+		"canonical":       {val: "00010203-0405-0607-0809-0a0b0c0d0e0f"},
+		"upper case":      {val: "00010203-0405-0607-0809-0A0B0C0D0E0F"},
+		"without hyphens": {val: "000102030405060708090a0b0c0d0e0f"},
+	}
+
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			var actual UUID
+
+			err := actual.UnmarshalText([]byte(tc.val))
+			assert.NoError(t, err)
+			assert.Equal(t, expected, actual)
+		})
+	}
 }
 
 func TestUUIDUnmarshalTextError(t *testing.T) {
-	var err error
-	var uuid UUID
+	tests := map[string]struct {
+		val string
+	}{
+		"empty":                            {val: ""},
+		"too short":                        {val: "15"},
+		"one symbol too short":             {val: "00010203-0405-0607-0809-0a0b0c0d0e0"},
+		"one symbol too long":              {val: "00010203-0405-0607-0809-0a0b0c0d0e0f0"},
+		"invalid symbols":                  {val: "00010203-0405-0607-0809-0a0b0c0d0exx"},
+		"invalid symbols without hyphens":  {val: "000102030405060708090a0b0c0d0exx"},
+		"misplaced hyphen":                 {val: "0001020-30405-0607-0809-0a0b0c0d0e0f"},
+		"hex symbol instead of 1st hyphen": {val: "00010203a0405-0607-0809-0a0b0c0d0e0f"},
+		"hex symbol instead of 2nd hyphen": {val: "00010203-0405a0607-0809-0a0b0c0d0e0f"},
+		"hex symbol instead of 3rd hyphen": {val: "00010203-0405-0607a0809-0a0b0c0d0e0f"},
+		"hex symbol instead of 4th hyphen": {val: "00010203-0405-0607-0809a0a0b0c0d0e0f"},
+		"hyphens at the end":               {val: "000102030405060708090a0b0c0d0e0f----"},
+		"extra hyphens":                    {val: "-00010203-0405-0607-0809-0a0b0c0d0e0f-"},
+		"hyphen instead of hex symbol":     {val: "00010203-0405-0607-0809-0a0b0c0d"},
+		"only hyphens":                     {val: "------------------------------------"},
+	}
 
-	err = uuid.UnmarshalText([]byte(`15`))
-	assert.Error(t, err)
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			// Receiver must be left untouched when parsing fails
+			expected := UUID{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16}
+			uuid := expected
 
-	err = uuid.UnmarshalText([]byte(`invalid`))
-	assert.Error(t, err)
-
-	// Valid length, but invalid symbols "xx"
-	err = uuid.UnmarshalText([]byte(`0102030405060708090a0b0c0d0exx`))
-	assert.Error(t, err)
+			err := uuid.UnmarshalText([]byte(tc.val))
+			assert.Error(t, err)
+			assert.Equal(t, expected, uuid)
+		})
+	}
 }
 
 func TestUUIDMarshalXML(t *testing.T) {
