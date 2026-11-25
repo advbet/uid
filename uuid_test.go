@@ -93,9 +93,9 @@ func TestUUIDScanStringErrors(t *testing.T) {
 }
 
 func TestNewInts(t *testing.T) {
-	// Setting max uint64 values should result UUID with all 1 bits except
+	// Setting max allowed values should result UUID with all 1 bits except
 	// for variant type
-	uuid := NewInts(0xffffffffffffffff, 0xffffffffffffffff)
+	uuid := NewInts(0xffffffffffffffff, 0x3fffffffffffffff)
 	expected := UUID{
 		0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
 		0x3f, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
@@ -107,29 +107,27 @@ func TestNewInts(t *testing.T) {
 	assert.True(t, uuid == Zero)
 }
 
-func TestNewIntsChecked(t *testing.T) {
+func TestNewIntsRange(t *testing.T) {
 	tests := map[string]struct {
-		a   uint64
-		b   uint64
-		err bool
+		a      uint64
+		b      uint64
+		panics bool
 	}{
 		"zero values":       {a: 0, b: 0},
 		"max a":             {a: 0xffffffffffffffff, b: 1},
 		"max b":             {a: 1, b: 0x3fffffffffffffff},
-		"b one over max":    {a: 1, b: 0x4000000000000000, err: true},
-		"b highest bit set": {a: 1, b: 0x8000000000000000, err: true},
-		"b all bits set":    {a: 1, b: 0xffffffffffffffff, err: true},
+		"b one over max":    {a: 1, b: 0x4000000000000000, panics: true},
+		"b highest bit set": {a: 1, b: 0x8000000000000000, panics: true},
+		"b all bits set":    {a: 1, b: 0xffffffffffffffff, panics: true},
 	}
 
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
-			uuid, err := NewIntsChecked(tc.a, tc.b)
-			if tc.err {
-				assert.Error(t, err)
-				assert.Equal(t, Zero, uuid)
+			if tc.panics {
+				assert.Panics(t, func() { NewInts(tc.a, tc.b) })
 				return
 			}
-			require.NoError(t, err)
+			uuid := NewInts(tc.a, tc.b)
 
 			// Accepted values must round trip without losing bits
 			a, b, err := uuid.ParseIntBased()
